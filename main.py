@@ -23,7 +23,7 @@ now = datetime.now()
 # -----------------
 train_dqn = False
 test_dqn = True
-render = True
+render = False
 
 #! Define env attributes (environment specific)
 no_actions = 4
@@ -33,10 +33,10 @@ no_states = 2
 # ----------------
 learning_rate = 0.005
 gamma = 0.99
-buffer_limit = 50_000
+buffer_limit = 50_0
 batch_size = no_actions*16
-num_episodes = 1_0000
-max_steps = 10_0
+num_episodes = 100_00
+max_steps = 10
 
 goal_coordinates = (9, 9)
 
@@ -115,8 +115,8 @@ if train_dqn:
     plt.ylabel('Rewards')
     plt.legend()
     plt.savefig("training_curve.png")
-    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-    locationchange= os.path.join("trainings","training_curve"+date_time+".png")
+    date_time = now.strftime("_%H:%M:%S_").replace(" ","")
+    locationchange= os.path.join("trainings","training_curve"+str(date_time)+".png")
     plt.savefig(locationchange)
     plt.show()
 
