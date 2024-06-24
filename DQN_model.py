@@ -13,6 +13,8 @@ class Qnet(nn.Module):
         self.fc1 = nn.Linear(no_states, 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, no_actions)
+        self.actions = no_actions
+        self.states = no_states
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -25,7 +27,7 @@ class Qnet(nn.Module):
         
         #! Exploration
         if random.random() < epsilon:
-            return random.randint(0, 1)
+            return random.randint(0, self.actions)
         
         #! Exploitation
         else : 

@@ -10,12 +10,19 @@ import matplotlib.pyplot as plt
 from utils import ReplayBuffer, train
 from padm_env import create_env
 from constants import HELL_COORDINATE_POINTS
+import os
+
+from datetime import datetime
+
+from datetime import datetime
+
+now = datetime.now()
 
 
 # User definitions:
 # -----------------
-train_dqn = True
-test_dqn = False
+train_dqn = False
+test_dqn = True
 render = True
 
 #! Define env attributes (environment specific)
@@ -25,11 +32,11 @@ no_states = 2
 # Hyperparameters:
 # ----------------
 learning_rate = 0.005
-gamma = 0.98
+gamma = 0.99
 buffer_limit = 50_000
-batch_size = 32
-num_episodes = 10_000
-max_steps = 10_000
+batch_size = no_actions*16
+num_episodes = 1_0000
+max_steps = 10_0
 
 goal_coordinates = (9, 9)
 
@@ -63,7 +70,6 @@ if train_dqn:
 
         s, _ = env.reset()
         done = False
-        print("Shape of s",s.shape,s)
         #! Define maximum steps per episode, here 1,000
         for _ in range(max_steps):
             #! Choose an action (Exploration vs. Exploitation)
@@ -83,8 +89,8 @@ if train_dqn:
             if done:
                 break
 
-        if memory.size() > 2000:
-            train(q_net, q_target, memory, optimizer, batch_size, gamma)
+        # if memory.size() > 8000:
+        #     train(q_net, q_target, memory, optimizer, batch_size, gamma)
 
         if n_epi % print_interval == 0 and n_epi != 0:
             q_target.load_state_dict(q_net.state_dict())
@@ -97,7 +103,7 @@ if train_dqn:
         #! Define a stopping condition for the game:
         if rewards[-10:] == [max_steps]*10:
             break
-
+        
     env.close()
 
     #! Save the trained Q-net
@@ -109,6 +115,9 @@ if train_dqn:
     plt.ylabel('Rewards')
     plt.legend()
     plt.savefig("training_curve.png")
+    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
+    locationchange= os.path.join("trainings","training_curve"+date_time+".png")
+    plt.savefig(locationchange)
     plt.show()
 
 # Test:
@@ -121,16 +130,17 @@ if test_dqn:
     dqn.load_state_dict(torch.load("dqn.pth"))
 
     for _ in range(10):
-        s, _ = env.reset()
+        s, _ = env.reset(train=train_dqn)
         episode_reward = 0
 
         for _ in range(max_steps):
             #! Completely exploit
             action = dqn(torch.from_numpy(s).float())
-            s_prime, reward, done, _, _ = env.step(action.argmax().item())
+            s_prime, reward, done, _ = env.step(action.argmax().item())
             s = s_prime
 
             episode_reward += reward
+            env.render()
 
             if done:
                 break

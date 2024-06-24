@@ -48,6 +48,7 @@ def train(q_net,
     for _ in range(10):
         #! Monte Carlo sampling of a batch
         s, a, r, s_prime, done_mask = memory.sample(batch_size)
+        print('s, a, r, s_prime, done_mask: ', s.shape, a, r.shape, s_prime.shape, done_mask.shape)
 
         #! Get the Q-values
         q_out = q_net(s)
