@@ -3,6 +3,7 @@
 # Imports:
 # --------
 import torch
+import numpy as np
 import gymnasium as gym
 from DQN_model import Qnet
 import torch.optim as optim
@@ -21,8 +22,8 @@ now = datetime.now()
 
 # User definitions:
 # -----------------
-train_dqn = False
-test_dqn = True
+train_dqn = True
+test_dqn = False
 render = False
 
 #! Define env attributes (environment specific)
@@ -31,12 +32,12 @@ no_states = 2
 
 # Hyperparameters:
 # ----------------
-learning_rate = 0.005
+learning_rate = 0.006
 gamma = 0.99
 buffer_limit = 50_0
 batch_size = no_actions*16
-num_episodes = 100_00
-max_steps = 10
+num_episodes = 200_00
+max_steps = 10_0
 
 goal_coordinates = (9, 9)
 
@@ -130,13 +131,20 @@ if test_dqn:
     dqn.load_state_dict(torch.load("dqn.pth"))
 
     for _ in range(10):
-        s, _ = env.reset(train=train_dqn)
+        s, _ = env.reset()
         episode_reward = 0
 
         for _ in range(max_steps):
-            #! Completely exploit
-            action = dqn(torch.from_numpy(s).float())
-            s_prime, reward, done, _ = env.step(action.argmax().item())
+            # Encourage taking suboptimal actions to increase path length
+            action_values = dqn(torch.from_numpy(s).float()).detach().numpy()
+            # From the pth file Sorted the actions
+            sorted_actions = action_values.argsort()[::-1]
+            #From the Actions sorted based on values taking any random
+            suboptimal_action_index = np.random.choice(range(1, len(sorted_actions)))
+            # Generate the Sorted Actions based on values
+            action = sorted_actions[suboptimal_action_index]
+
+            s_prime, reward, done, _ = env.step(action)
             s = s_prime
 
             episode_reward += reward
